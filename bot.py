@@ -295,6 +295,7 @@ async def on_message(ctx):
 	with open("users.json", 'w') as f:
 		json.dump(users, f)
 
+
 token = open("token.txt", "r")
-client.run("")
-##test##
+
+client.run(token)
