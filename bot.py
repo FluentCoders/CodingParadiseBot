@@ -296,6 +296,7 @@ async def on_message(ctx):
 		json.dump(users, f)
 
 
-token = open("token.txt", "r")
+with open("token.txt", "r") as file:
+	token=file.readline()
 
-client.run(token)
+client.run(f"{token}")
