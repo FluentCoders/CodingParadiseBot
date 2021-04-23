@@ -39,6 +39,7 @@ async def update_status():
 	print("[i] Status Updater Task is running...")
 	guild = client.get_guild(834081696915783721)
 	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | ! | v1.0"))
+	#await client.change_presence(status=discord.Status.online, activity=discord.Streaming(type=discord.ActivityType.streaming, name=f"how I code xD", url="https://twitch.tv/truemlgprooo"))
 
 @client.event
 async def on_message(ctx):
