@@ -38,7 +38,7 @@ async def on_ready():
 async def update_status():
 	print("[i] Status Updater Task is running...")
 	guild = client.get_guild(834081696915783721)
-	await client.change_presence(status=discord.Status.dnd, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | ! | v1.0"))
+	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | ! | v1.0"))
 
 @client.event
 async def on_command_error(ctx, error):
@@ -249,7 +249,7 @@ async def user_info(ctx, user: discord.Member=None):
 ##################RANKING SYSTEM#######################
 
 async def update_data(users, user):
-	if str(user.id) in users["members"]:
+	if str(user.id) in users["members"]:			# This line gives KeyError: 'members'
 		pass
 	elif user.bot:
 		pass
