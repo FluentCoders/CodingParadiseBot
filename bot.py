@@ -41,6 +41,55 @@ async def update_status():
 	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | ! | v1.0"))
 
 @client.event
+async def on_message(ctx):
+	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
+
+	with open("users.json", 'r') as f:
+		users = json.load(f)
+
+	await update_data(users, ctx.author)
+	await add_stats(users, ctx.author, ctx)
+	await level_up(users, ctx.author, ctx.channel)
+
+	with open("users.json", 'w') as f:
+		json.dump(users, f)
+
+##################RANKING SYSTEM#######################
+
+async def update_data(users, user):
+	if str(user.id) in users["members"]:			# This line gives KeyError: 'members'
+		pass
+	elif user.bot:
+		pass
+	else:
+		users["members"][str(user.id)] = {}
+		users["members"][str(user.id)]["messages"] = 0
+		users["members"][str(user.id)]["points"] = 0
+
+async def add_stats(users, user, message):
+	if not user.bot:
+		users["members"][str(user.id)]["messages"] += message
+
+async def level_up(users, user, channel):
+	if user.bot:
+		pass
+	else:
+		points_per_level = 20
+		
+		points = users["members"][str(user.id)]["points"]
+		level = users["members"][str(user.id)]["level"]
+		
+		level_given = int(points / points_per_level)
+		
+		if level == level_given:
+			pass
+		else:
+			print("{} Leveled up {}".format(user.mention, level))
+			users["members"][str(user.id)]["level"] = level_given
+
+##################//RANKING SYSTEM//#######################
+
+@client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send(embed = discord.Embed(description = f'**{ctx.author.name}, this command doesn\'t exist.**', color=0xff2500))
@@ -245,56 +294,6 @@ async def user_info(ctx, user: discord.Member=None):
 # This leveling thing looks cool - TrueMLGPro
 
 # I'm done copying stuff - TrueMLGPro
-
-##################RANKING SYSTEM#######################
-
-async def update_data(users, user):
-	if str(user.id) in users["members"]:			# This line gives KeyError: 'members'
-		pass
-	elif user.bot:
-		pass
-	else:
-		users["members"][str(user.id)] = {}
-		users["members"][str(user.id)]["messages"] = 0
-		users["members"][str(user.id)]["points"] = 0
-
-async def add_stats(users, user, message):
-	if not user.bot:
-		users["members"][str(user.id)]["messages"] += message
-
-async def level_up(users, user, channel):
-	if user.bot:
-		pass
-	else:
-		points_per_level = 20
-		
-		points = users["members"][str(user.id)]["points"]
-		level = users["members"][str(user.id)]["level"]			# Hello there, just checking xD, alr back to hw :)
-		
-		level_given = int(points / points_per_level)
-		
-		if level == level_given:
-			pass
-		else:
-			print("{} Leveled up {}".format(user.mention, level))
-			users["members"][str(user.id)]["level"] = level_given
-
-##################//RANKING SYSTEM//#######################
-
-@client.event
-async def on_message(ctx):
-	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
-
-	with open("users.json", 'r') as f:
-		users = json.load(f)
-
-	await update_data(users, ctx.author)
-	await add_stats(users, ctx.author, ctx)
-	await level_up(users, ctx.author, ctx.channel)
-
-	with open("users.json", 'w') as f:
-		json.dump(users, f)
-
 
 with open("token.txt", "r") as file:
 	token=file.readline()
