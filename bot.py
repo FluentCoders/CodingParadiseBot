@@ -41,19 +41,8 @@ async def update_status():
 	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | ! | v1.0"))
 	#await client.change_presence(status=discord.Status.online, activity=discord.Streaming(type=discord.ActivityType.streaming, name=f"how I code xD", url="https://twitch.tv/truemlgprooo"))
 
-@client.event
-async def on_message(ctx):
-	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
 
-	with open("users.json", 'r') as f:
-		users = json.load(f)
 
-	await update_data(users, ctx.author)
-	await add_stats(users, ctx.author, ctx)
-	await level_up(users, ctx.author, ctx.channel)
-
-	with open("users.json", 'w') as f:
-		json.dump(users, f)
 
 ##################RANKING SYSTEM#######################
 
@@ -89,6 +78,39 @@ async def level_up(users, user, channel):
 			users["members"][str(user.id)]["level"] = level_given
 
 ##################//RANKING SYSTEM//#######################
+
+
+
+
+
+
+
+
+
+
+
+
+@client.event
+async def on_message(ctx):
+	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
+
+	with open("users.json", 'r') as f:
+		users = json.load(f)
+
+	await update_data(users, ctx.author)
+	await add_stats(users, ctx.author, ctx)
+	await level_up(users, ctx.author, ctx.channel)
+
+	with open("users.json", 'w') as f:
+		json.dump(users, f)
+
+
+
+
+
+
+
+
 
 @client.event
 async def on_command_error(ctx, error):
