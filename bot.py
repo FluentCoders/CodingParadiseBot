@@ -22,7 +22,7 @@ intents.members = True
 intents.presences = True
 
 Client = discord.Client()
-client = commands.Bot(command_prefix = "!", intents = intents)
+client = commands.Bot(command_prefix = "!!", intents = intents)
 client.remove_command('help')
 
 @client.event
