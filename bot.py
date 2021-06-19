@@ -38,7 +38,7 @@ async def on_ready():
 async def update_status():
 	print("[i] Status Updater Task is running...")
 	guild = client.get_guild(834081696915783721)
-	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | ! | v1.0"))
+	#await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | ! | v1.0"))
 	#await client.change_presence(status=discord.Status.online, activity=discord.Streaming(type=discord.ActivityType.streaming, name=f"how I code xD", url="https://twitch.tv/truemlgprooo"))
 
 
@@ -82,7 +82,25 @@ async def level_up(users, user, channel):
 
 
 
+###MEMBER JOIN###
 
+@client.event
+async def on_member_join(member):
+	role_operating_system = discord.utils.get(member.guild.roles, id=834157304542789674)
+	role_programming = discord.utils.get(member.guild.roles, id=834157423522218024)
+	role_member = discord.utils.get(member.guild.roles, id=834088923419508737)
+	role_bot = discord.utils.get(member.guild.roles, id=835270128265461850)
+
+	if not member.bot:
+		await member.add_roles(role_operating_system)
+		await member.add_roles(role_programming)
+		await member.add_roles(role_member)
+
+	else:
+		await member.add_roles(role_bot)
+
+
+    
 
 
 
