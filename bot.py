@@ -94,20 +94,6 @@ async def level_up(users, user, channel):
 async def on_message(ctx):
 	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
 
-	with open("users.json", 'r') as f:
-		users = json.load(f)
-
-	await update_data(users, ctx.author)
-	await add_stats(users, ctx.author, ctx)
-	await level_up(users, ctx.author, ctx.channel)
-
-	with open("users.json", 'w') as f:
-		json.dump(users, f)
-
-
-
-
-
 
 
 
