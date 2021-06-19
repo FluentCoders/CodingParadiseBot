@@ -318,6 +318,61 @@ async def user_info(ctx, user: discord.Member=None):
 
 # I'm done copying stuff - TrueMLGPro
 
+
+
+
+
+
+
+
+
+
+
+
+
+@bot.command(pass_context = True, aliases=["chk_rls", "c_r"])
+async def check_roles(ctx):
+	member_count=len([m for m in ctx.guild.members if not m.bot])
+	bot_count=len([m for m in ctx.guild.members if m.bot])
+	await ctx.send("Checking roles for {} members including {} bots...".format(member_count, bot_count))
+	await ctx.send("It may take up to {} minutes.".format(round(((member_count*2)/60), 2)))
+	for guild in client.guilds:
+		for member in guild.members:
+			roles = [role.name for role in ctx.guild.roles]
+			role_operating_system = get(ctx.guild.roles, id=834157304542789674)
+			role_programming = get(ctx.guild.roles, id=834157423522218024)
+			role_member = get(ctx.guild.roles, id=834088923419508737)
+			role_bot = get(ctx.guild.roles, id=835270128265461850)
+			if not member.bot:
+				if role_operating_system not in roles:
+					await member.add_roles(role_cl)
+				if role_programming not in roles:
+					await member.add_roles(role_mb)
+				if role_member not in roles:
+					await member.add_roles(role_mb)
+			else:
+				if role_bot not in roles:
+					await member.add_roles(role_bot)
+
+				if role_operating_system in roles:
+					await member.remove_roles(role_operating_system)
+				if role_programming in roles:
+					await member.remove_roles(role_programming)
+				if role_member in roles:
+					await member.remove_roles(role_member)
+				
+
+	await ctx.send("Missing roles were added successfully!")
+	print ("Command 'check_roles' succeed!")
+	#rewrite
+
+
+
+
+
+
+
+
 with open("token.txt", "r") as file:
 	token=file.readline()
 
