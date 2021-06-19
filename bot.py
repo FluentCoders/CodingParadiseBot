@@ -330,7 +330,7 @@ async def user_info(ctx, user: discord.Member=None):
 
 
 
-@bot.command(pass_context = True, aliases=["chk_rls", "c_r"])
+@client.command(pass_context = True, aliases=["chk_rls", "c_r"])
 async def check_roles(ctx):
 	member_count=len([m for m in ctx.guild.members if not m.bot])
 	bot_count=len([m for m in ctx.guild.members if m.bot])
