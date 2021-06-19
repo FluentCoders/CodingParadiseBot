@@ -325,17 +325,17 @@ async def check_roles(ctx):
 	for guild in client.guilds:
 		for member in guild.members:
 			roles = [role.name for role in ctx.guild.roles]
-			role_operating_system = get(ctx.guild.roles, id=834157304542789674)
-			role_programming = get(ctx.guild.roles, id=834157423522218024)
-			role_member = get(ctx.guild.roles, id=834088923419508737)
-			role_bot = get(ctx.guild.roles, id=835270128265461850)
+			role_operating_system = discord.utils.get(ctx.guild.roles, id=834157304542789674)
+			role_programming = discord.utils.get(ctx.guild.roles, id=834157423522218024)
+			role_member = discord.utils.get(ctx.guild.roles, id=834088923419508737)
+			role_bot = discord.utils.get(ctx.guild.roles, id=835270128265461850)
 			if not member.bot:
 				if role_operating_system not in roles:
-					await member.add_roles(role_cl)
+					await member.add_roles(role_operating_system)
 				if role_programming not in roles:
-					await member.add_roles(role_mb)
+					await member.add_roles(role_programming)
 				if role_member not in roles:
-					await member.add_roles(role_mb)
+					await member.add_roles(role_member)
 			else:
 				if role_bot not in roles:
 					await member.add_roles(role_bot)
@@ -351,12 +351,6 @@ async def check_roles(ctx):
 	await ctx.send("Missing roles were added successfully!")
 	print ("Command 'check_roles' succeed!")
 	#rewrite
-
-
-
-
-
-
 
 
 with open("token.txt", "r") as file:
