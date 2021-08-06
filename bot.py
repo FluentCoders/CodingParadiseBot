@@ -46,19 +46,32 @@ async def update_status():
 
 ##################RANKING SYSTEM#######################
 
-async def update_data(users, user):
-	if str(user.id) in users["members"]:			# This line gives KeyError: 'members'
-		pass
-	elif user.bot:
-		pass
-	else:
-		users["members"][str(user.id)] = {}
-		users["members"][str(user.id)]["messages"] = 0
-		users["members"][str(user.id)]["points"] = 0
+async def update_data(user):
+    with open ("data.json", "r") as f:
+        data = json.load(f)
+    
+    if str(user.id) in data:
+        pass
+    else:
+        data[str(user.id)] = {}
+        data[str(user.id)]["messages"] = 0
+        data[str(user.id)]["points"] = 0
+    
+    with open("data.json", "w") as f:
+        json.dump(data, f)
 
-async def add_stats(users, user, message):
+
+async def add_stats(user):
+	with open ("data.json", "r") as f:
+		data = json.load(f)
+	
 	if not user.bot:
-		users["members"][str(user.id)]["messages"] += message
+		data[str(user.id)]["messages"] += 1
+	
+	with open("data.json", "w") as f:
+		json.dump(data, f)
+
+
 
 async def level_up(users, user, channel):
 	if user.bot:
@@ -100,19 +113,14 @@ async def on_member_join(member):
 		await member.add_roles(role_bot)
 
 
-    
-
-
-
-
 
 
 
 @client.event
 async def on_message(ctx):
 	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
-
-
+	await update_data(ctx.author) #calls function to check if user is in database
+	await add_stats(ctx.author) #calls function to add message count to user in database
 
 
 
@@ -302,35 +310,6 @@ async def user_info(ctx, user: discord.Member=None):
 		embed.add_field(name='Bot?', value=user.bot)
 
 		await ctx.send(embed=embed)
-
-# Pog, I am just copying basic stuff if that's ok - TrueMLGPro
-# I don't wanna rewrite it xD so yeah - TrueMLGPro
-# Alright I'm sharing my terminal - TrueMLGPro
-# Please don't fuck up my system - TrueMLGPro
-# lmao - TrueMLGPro
-# You hacked me - TrueMLGPro
-# We are just building a lego thing - TrueMLGPro
-
-# now i can code ahah - andre
-
-# Well, gonna continue copying basic stuff - TrueMLGPro
-
-# ye same from place bot - andre
-
-# lmao pog - TrueMLGPro
-# This leveling thing looks cool - TrueMLGPro
-
-# I'm done copying stuff - TrueMLGPro
-
-
-
-
-
-
-
-
-
-
 
 
 
