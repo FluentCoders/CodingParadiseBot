@@ -14,6 +14,14 @@ import json
 import requests
 import asyncio
 
+commandPrefix = "!!"
+
+role_os_id = 925794916469203046
+role_programming_id = 925794916439818245
+role_member_id = 925794916469203048
+role_bot_id = 925794916469203047
+server_id = 925794916418859068
+
 if os.name == 'nt':
 	asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -22,7 +30,7 @@ intents.members = True
 intents.presences = True
 
 Client = discord.Client()
-client = commands.Bot(command_prefix = "!!", intents = intents)
+client = commands.Bot(command_prefix = commandPrefix, intents = intents)
 client.remove_command('help')
 
 @client.event
@@ -37,8 +45,8 @@ async def on_ready():
 @tasks.loop(seconds=10)
 async def update_status():
 	print("[i] Status Updater Task is running...")
-	guild = client.get_guild(834081696915783721)
-	#await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | ! | v1.0"))
+	guild = client.get_guild(server_id)
+	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | {commandPrefix} | v1.0"))
 	#await client.change_presence(status=discord.Status.online, activity=discord.Streaming(type=discord.ActivityType.streaming, name=f"how I code xD", url="https://twitch.tv/truemlgprooo"))
 
 
@@ -46,50 +54,50 @@ async def update_status():
 
 ##################RANKING SYSTEM#######################
 
-async def update_data(user):
-    with open ("data.json", "r") as f:
-        data = json.load(f)
-    
-    if str(user.id) in data:
-        pass
-    else:
-        data[str(user.id)] = {}
-        data[str(user.id)]["messages"] = 0
-        data[str(user.id)]["points"] = 0
-    
-    with open("data.json", "w") as f:
-        json.dump(data, f)
+#async def update_data(user):
+#    with open ("data.json", "r") as f:
+#        data = json.load(f)
+#    
+#    if str(user.id) in data:
+#        pass
+#    else:
+#        data[str(user.id)] = {}
+#        data[str(user.id)]["messages"] = 0
+#        data[str(user.id)]["points"] = 0
+#    
+#    with open("data.json", "w") as f:
+#        json.dump(data, f)
+#
 
-
-async def add_stats(user):
-	with open ("data.json", "r") as f:
-		data = json.load(f)
+#async def add_stats(user):
+#	with open ("data.json", "r") as f:
+#		data = json.load(f)
 	
-	if not user.bot:
-		data[str(user.id)]["messages"] += 1
-	
-	with open("data.json", "w") as f:
-		json.dump(data, f)
+#	if not user.bot:
+#		data[str(user.id)]["messages"] += 1
+#	
+#	with open("data.json", "w") as f:
+#		json.dump(data, f)
 
 
 
-async def level_up(users, user, channel):
-	if user.bot:
-		pass
-	else:
-		points_per_level = 20
-		
-		points = users["members"][str(user.id)]["points"]
-		level = users["members"][str(user.id)]["level"]
-		
-		level_given = int(points / points_per_level)
-		
-		if level == level_given:
-			pass
-		else:
-			print("{} Leveled up {}".format(user.mention, level))
-			users["members"][str(user.id)]["level"] = level_given
-
+#async def level_up(users, user, channel):
+#	if user.bot:
+#		pass
+#	else:
+#		points_per_level = 20
+#		
+#		points = users["members"][str(user.id)]["points"]
+#		level = users["members"][str(user.id)]["level"]
+#		
+#		level_given = int(points / points_per_level)
+#		
+#		if level == level_given:
+#			pass
+#		else:
+#			print("{} Leveled up {}".format(user.mention, level))
+#			users["members"][str(user.id)]["level"] = level_given
+#
 ##################//RANKING SYSTEM//#######################
 
 
@@ -99,10 +107,10 @@ async def level_up(users, user, channel):
 
 @client.event
 async def on_member_join(member):
-	role_operating_system = discord.utils.get(member.guild.roles, id=834157304542789674)
-	role_programming = discord.utils.get(member.guild.roles, id=834157423522218024)
-	role_member = discord.utils.get(member.guild.roles, id=834088923419508737)
-	role_bot = discord.utils.get(member.guild.roles, id=835270128265461850)
+	role_operating_system = discord.utils.get(member.guild.roles, id=925794916469203046)
+	role_programming = discord.utils.get(member.guild.roles, id=925794916439818245)
+	role_member = discord.utils.get(member.guild.roles, id=925794916469203048)
+	role_bot = discord.utils.get(member.guild.roles, id=925794916469203047)
 
 	if not member.bot:
 		await member.add_roles(role_operating_system)
@@ -119,8 +127,8 @@ async def on_member_join(member):
 @client.event
 async def on_message(ctx):
 	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
-	await update_data(ctx.author) #calls function to check if user is in database
-	await add_stats(ctx.author) #calls function to add message count to user in database
+	#await update_data(ctx.author) #calls function to check if user is in database
+	#await add_stats(ctx.author) #calls function to add message count to user in database
 
 
 
@@ -322,10 +330,10 @@ async def check_roles(ctx):
 	for guild in client.guilds:
 		for member in guild.members:
 			roles = [role.name for role in ctx.guild.roles]
-			role_operating_system = discord.utils.get(ctx.guild.roles, id=834157304542789674)
-			role_programming = discord.utils.get(ctx.guild.roles, id=834157423522218024)
-			role_member = discord.utils.get(ctx.guild.roles, id=834088923419508737)
-			role_bot = discord.utils.get(ctx.guild.roles, id=835270128265461850)
+			role_operating_system = discord.utils.get(ctx.guild.roles, id=role_os_id)
+			role_programming = discord.utils.get(ctx.guild.roles, id=role_programming_id)
+			role_member = discord.utils.get(ctx.guild.roles, id=role_member_id)
+			role_bot = discord.utils.get(ctx.guild.roles, id=role_bot_id)
 			if not member.bot:
 				if role_operating_system not in roles:
 					await member.add_roles(role_operating_system)
