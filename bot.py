@@ -1,7 +1,6 @@
 import discord
-import discord.utils
-from discord.ext.commands import Bot
 from discord.ext import commands, tasks
+from discord.file import File
 from discord import Game
 import platform
 import psutil
@@ -14,7 +13,7 @@ import json
 import requests
 import asyncio
 
-commandPrefix = "!!"
+commandPrefix = "??"
 
 role_os_id = 925794916469203046
 role_programming_id = 925794916439818245
@@ -42,15 +41,12 @@ async def on_ready():
 	print ("[LOGGED IN]")
 	update_status.start()
 
-@tasks.loop(seconds=10)
+@tasks.loop(seconds=1)
 async def update_status():
 	print("[i] Status Updater Task is running...")
 	guild = client.get_guild(server_id)
 	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | {commandPrefix} | v1.0"))
 	#await client.change_presence(status=discord.Status.online, activity=discord.Streaming(type=discord.ActivityType.streaming, name=f"how I code xD", url="https://twitch.tv/truemlgprooo"))
-
-
-
 
 ##################RANKING SYSTEM#######################
 
@@ -150,8 +146,13 @@ async def on_command_error(ctx, error):
     print(error)
     print("\n")
 
-@client.command(pass_context=True, aliases=["m_s"])
-async def member_stats(ctx):
+
+@client.slash_command(
+    name = "member_stats",
+    description= "Command to display member count.",
+    guild_ids = [925794916418859068],
+)
+async def member_stats_slash(ctx):
 	total_users_count = ctx.guild.member_count
 	member_count = len([m for m in ctx.guild.members if not m.bot])
 	bot_count = len([m for m in ctx.guild.members if m.bot])
@@ -166,11 +167,15 @@ async def member_stats(ctx):
 	embed.add_field(name="Total Users", value=total_users_count)
 	embed.add_field(name="Members", value=member_count)
 	embed.add_field(name="Bots", value=bot_count)
-	embed.set_footer(text=f'Requested by {author}', icon_url=author.avatar_url)
-	await ctx.send(embed = embed)
+	embed.set_footer(text=f'Requested by {author}')
+	await ctx.respond(embed = embed)
 	print ("Command 'member_stats' succeed")
 
-@client.command(pass_context = True)
+@client.slash_command(
+    name = "bot_info",
+    description= "Command to display informations about the bot.",
+    guild_ids = [925794916418859068],
+)
 async def bot_info(ctx):
 	value = random.randint(0, 0xffffff)
 	system = platform.system()
@@ -197,8 +202,13 @@ async def bot_info(ctx):
 	info.add_field(name="CPU Usage", value=str(cpu_percent) + "%")
 	info.add_field(name="RAM Usage", value=str(int(mem_used / 1024 / 1024)) + "MB" + " / " + str(int(mem_total / 1024 / 1024)) + "MB")
 	info.add_field(name="Uptime", value=str(datetime.timedelta(seconds=round(uptime_sys))))
+	info.set_footer(text=f'Requested by {ctx.author.mention}')
 
-	await ctx.send(embed=info)
+	await ctx.respond(embed=info)
+
+
+
+
 
 @client.command(pass_context = True, aliases=["c"])
 @commands.has_permissions(manage_messages=True)
