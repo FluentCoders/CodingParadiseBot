@@ -202,7 +202,7 @@ async def bot_info(ctx):
 	info.add_field(name="CPU Usage", value=str(cpu_percent) + "%")
 	info.add_field(name="RAM Usage", value=str(int(mem_used / 1024 / 1024)) + "MB" + " / " + str(int(mem_total / 1024 / 1024)) + "MB")
 	info.add_field(name="Uptime", value=str(datetime.timedelta(seconds=round(uptime_sys))))
-	info.set_footer(text=f'Requested by {ctx.author.mention}')
+	info.set_footer(text=f'Requested by {ctx.author}')
 
 	await ctx.respond(embed=info)
 
