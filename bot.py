@@ -41,12 +41,11 @@ async def on_ready():
 	print ("[LOGGED IN]")
 	update_status.start()
 
-@tasks.loop(seconds=1)
+@tasks.loop(seconds=15)
 async def update_status():
 	print("[i] Status Updater Task is running...")
 	guild = client.get_guild(server_id)
 	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | {commandPrefix} | v1.0"))
-	#await client.change_presence(status=discord.Status.online, activity=discord.Streaming(type=discord.ActivityType.streaming, name=f"how I code xD", url="https://twitch.tv/truemlgprooo"))
 
 ##################RANKING SYSTEM#######################
 
@@ -75,8 +74,6 @@ async def update_status():
 #	with open("data.json", "w") as f:
 #		json.dump(data, f)
 
-
-
 #async def level_up(users, user, channel):
 #	if user.bot:
 #		pass
@@ -96,10 +93,7 @@ async def update_status():
 #
 ##################//RANKING SYSTEM//#######################
 
-
-
-
-###MEMBER JOIN###
+### EVENTS ###
 
 @client.event
 async def on_member_join(member):
@@ -112,21 +106,14 @@ async def on_member_join(member):
 		await member.add_roles(role_operating_system)
 		await member.add_roles(role_programming)
 		await member.add_roles(role_member)
-
 	else:
 		await member.add_roles(role_bot)
-
-
-
-
 
 @client.event
 async def on_message(ctx):
 	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
 	#await update_data(ctx.author) #calls function to check if user is in database
 	#await add_stats(ctx.author) #calls function to add message count to user in database
-
-
 
 @client.event
 async def on_command_error(ctx, error):
@@ -146,6 +133,7 @@ async def on_command_error(ctx, error):
     print(error)
     print("\n")
 
+### COMMANDS ###
 
 @client.slash_command(
     name = "member_stats",
@@ -173,7 +161,7 @@ async def member_stats_slash(ctx):
 
 @client.slash_command(
     name = "bot_info",
-    description= "Command to display informations about the bot.",
+    description= "Command to display information about the bot.",
     guild_ids = [925794916418859068],
 )
 async def bot_info(ctx):
@@ -206,9 +194,8 @@ async def bot_info(ctx):
 
 	await ctx.respond(embed=info)
 
-
-
-
+# TODO: REWRITE THE COMMANDS BELOW
+# Use slash commands instead
 
 @client.command(pass_context = True, aliases=["c"])
 @commands.has_permissions(manage_messages=True)
@@ -329,14 +316,13 @@ async def user_info(ctx, user: discord.Member=None):
 
 		await ctx.send(embed=embed)
 
-
-
 @client.command(pass_context = True, aliases=["chk_rls", "c_r"])
 async def check_roles(ctx):
 	member_count=len([m for m in ctx.guild.members if not m.bot])
 	bot_count=len([m for m in ctx.guild.members if m.bot])
 	await ctx.send("Checking roles for {} members including {} bots...".format(member_count, bot_count))
-	await ctx.send("It may take up to {} minutes.".format(round(((member_count*2)/60), 2)))
+	await ctx.send("It may take up to {} minutes.".format(round(((member_count * 2) / 60), 2)))
+	
 	for guild in client.guilds:
 		for member in guild.members:
 			roles = [role.name for role in ctx.guild.roles]
@@ -361,12 +347,9 @@ async def check_roles(ctx):
 					await member.remove_roles(role_programming)
 				if role_member in roles:
 					await member.remove_roles(role_member)
-				
 
 	await ctx.send("Missing roles were added successfully!")
 	print ("Command 'check_roles' succeed!")
-	#rewrite
-
 
 with open("token.txt", "r") as file:
 	token=file.readline()
