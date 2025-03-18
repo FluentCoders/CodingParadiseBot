@@ -1,7 +1,8 @@
 import discord
+from discord.commands import permissions, Option
+from discord.commands.context import ApplicationContext
 from discord.ext import commands, tasks
-from discord.file import File
-from discord import Game
+from datetime import datetime
 import platform
 import psutil
 import uptime
@@ -13,7 +14,36 @@ import json
 import requests
 import asyncio
 
-commandPrefix = "??"
+"""
+Permission Cheatsheet (by TrueMLGPro)
+- For calculating an integer value for multiple role permission -
+- Please refer to https://discordapi.com/permissions.html -
+
+* = Bot owner must have 2FA enabled if the guild requires 2FA
+
+General Permissions:
+View Channels - 1024
+* Manage Channels - 16
+* Manage Roles - 268435456
+* Manage Emojis and Stickers - 1073741824
+View Audit Log - 128
+View Server Insights - 524288
+* Manage Webhooks - 536870912
+* Manage Server - 32
+Create Invite - 1
+Change Nickname - 67108864
+Manage Nicknames - 134217728
+* Kick Members - 2
+* Ban Members - 4
+* Manage Events - 8589934592
+* Administrator - 8
+
+Text Permissions:
+# TODO
+
+"""
+
+commandPrefix = "??" # Obsolete
 
 role_os_id = 925794916469203046
 role_programming_id = 925794916439818245
@@ -30,7 +60,6 @@ intents.presences = True
 
 Client = discord.Client()
 client = commands.Bot(command_prefix = commandPrefix, intents = intents)
-client.remove_command('help')
 
 @client.event
 async def on_ready():
@@ -41,11 +70,23 @@ async def on_ready():
 	print ("[LOGGED IN]")
 	update_status.start()
 
-@tasks.loop(seconds=15)
+@tasks.loop(seconds=20)
 async def update_status():
-	print("[i] Status Updater Task is running...")
+	statuses = [
+        "Status 1",
+        "Status 2",
+        "Status 3",
+        "Status 4",
+        "Status 5",
+        "Status 6",
+    ]
+	now = datetime.datetime.now()
+	current_time = now.strftime("%H:%M:%S")
+	print(f"[{current_time}] [i] Status Updater Task is running...")
 	guild = client.get_guild(server_id)
-	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | {commandPrefix} | v1.0"))
+	current_status = random.choice(statuses)
+	# await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{guild.member_count} members | v1.0.1"))
+	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.playing, name=current_status))
 
 ##################RANKING SYSTEM#######################
 
@@ -112,8 +153,8 @@ async def on_member_join(member):
 @client.event
 async def on_message(ctx):
 	await client.process_commands(ctx) # This is really important otherwise all the commands won't work at all if there is an on_message thingy.
-	#await update_data(ctx.author) #calls function to check if user is in database
-	#await add_stats(ctx.author) #calls function to add message count to user in database
+	# await update_data(ctx.author) # Calls function to check if user is in database
+	# await add_stats(ctx.author) # Calls function to add message count to user in database
 
 @client.event
 async def on_command_error(ctx, error):
@@ -134,13 +175,98 @@ async def on_command_error(ctx, error):
     print("\n")
 
 ### COMMANDS ###
+# For permission cheatsheet, go to line 18
+
+### Moderation Commands ###
+
+'''
+@permissions.has_any_role(*items, guild_id=None)
+
+The method used to specify multiple application command role restrictions.
+- The application command runs if the invoker has any of the specified roles.
+
+Parameters
+	- *items (Union[int, str]) – The integers or strings that represent the ids or names of the roles that the permission is tied to.
+	- guild_id (int) – The integer which represents the id of the guild that the permission may be tied to.
+
+--------
+
+discord.InteractionResponse.send_message(content=None, *, embed=None, embeds=None,
+	view=None, tts=False, ephemeral=False, allowed_mentions=None,
+	file=None, files=None, delete_after=None)
+
+This function is a coroutine.
+- Responds to this interaction by sending a message.
+
+Parameters:
+	- content (Optional[str]) – The content of the message to send.
+	- embeds (List[Embed]) – A list of embeds to send with the content. Maximum of 10. This cannot be mixed with the embed parameter.
+	- embed (Embed) – The rich embed for the content to send. This cannot be mixed with embeds parameter.
+	- tts (bool) – Indicates if the message should be sent using text-to-speech.
+	- view (discord.ui.View) – The view to send with the message.
+	- ephemeral (bool) – Indicates if the message should only be visible to the user who started the interaction. If a view is sent with an ephemeral message and it has no timeout set then the timeout is set to 15 minutes.
+	- allowed_mentions (AllowedMentions) – Controls the mentions being processed in this message. See abc.Messageable.send() for more information.
+	- delete_after (float) – If provided, the number of seconds to wait in the background before deleting the message we just sent.
+	- file (File) – The file to upload.
+	- files (List[File]) – A list of files to upload. Must be a maximum of 10.
+
+Raises:
+	- HTTPException – Sending the message failed.
+	- TypeError – You specified both embed and embeds.
+	- ValueError – The length of embeds was invalid.
+	- InteractionResponded – This interaction has already been responded to before.
+'''
+@client.slash_command(
+    name = "clear",
+    description = "[Moderation] Purges a specified amount of messages",
+    guild_ids = [925794916418859068]
+)
+@permissions.has_any_role("Chefs", "Staff")
+async def clear_slash(ctx: ApplicationContext, amount: Option(int, "Enter the amount of messages to purge", required = True, min=1, max=1000, default=10)):
+	if isinstance(amount, int):
+		if amount > 1:
+			await ctx.channel.purge(limit=amount)
+			await discord.InteractionResponse.send_message(f":white_check_mark: {amount} messages were deleted successfully!", ephemeral=True, delete_after=5)
+			print("Command 'clear' succeed")
+		else:
+			raise discord.ext.commands.errors.BadArgument
+	else:
+		raise discord.ext.commands.errors.BadArgument
+
+@client.slash_command(
+    name = "kick",
+    description = "[Moderation] Kicks specified member",
+    guild_ids = [925794916418859068]
+)
+@permissions.has_any_role("Chefs", "Staff")
+async def kick_slash(ctx: ApplicationContext, user: Option(discord.Member, "Enter target user's name", required = True)):
+	username = user.name
+	await discord.Member.kick(user)
+	await discord.InteractionResponse.send_message(f":white_check_mark: {username} was kicked successfully!", ephemeral=True, delete_after=10)
+	print("Command 'kick' succeed")
+	print(f"{username} was kicked!")
+
+@client.slash_command(
+    name = "ban",
+    description = "[Moderation] Bans specified member",
+    guild_ids = [925794916418859068]
+)
+@permissions.has_any_role("Chefs", "Staff")
+async def ban_slash(ctx: ApplicationContext, user: Option(discord.Member, "Enter target user's name", required = True)):
+	username = user.name
+	await discord.Member.ban(user)
+	await discord.InteractionResponse.send_message(f":white_check_mark: {username} was banned successfully!", ephemeral=True, delete_after=10)
+	print("Command 'ban' succeed")
+	print(f"{username} was banned!")
+
+### Utility commands ###
 
 @client.slash_command(
     name = "member_stats",
-    description= "Command to display member count.",
+    description = "Displays the member count of this guild",
     guild_ids = [925794916418859068],
 )
-async def member_stats_slash(ctx):
+async def member_stats_slash(ctx: ApplicationContext):
 	total_users_count = ctx.guild.member_count
 	member_count = len([m for m in ctx.guild.members if not m.bot])
 	bot_count = len([m for m in ctx.guild.members if m.bot])
@@ -157,14 +283,13 @@ async def member_stats_slash(ctx):
 	embed.add_field(name="Bots", value=bot_count)
 	embed.set_footer(text=f'Requested by {author}')
 	await ctx.respond(embed = embed)
-	print ("Command 'member_stats' succeed")
 
 @client.slash_command(
     name = "bot_info",
-    description= "Command to display information about the bot.",
+    description = "Responds with bot usage statistics",
     guild_ids = [925794916418859068],
 )
-async def bot_info(ctx):
+async def bot_info_slash(ctx: ApplicationContext):
 	value = random.randint(0, 0xffffff)
 	system = platform.system()
 	architecture = platform.machine()
@@ -194,162 +319,135 @@ async def bot_info(ctx):
 
 	await ctx.respond(embed=info)
 
-# TODO: REWRITE THE COMMANDS BELOW
-# Use slash commands instead
-
-@client.command(pass_context = True, aliases=["c"])
-@commands.has_permissions(manage_messages=True)
-async def clear(ctx, amount: int):
-	if isinstance(amount, int):
-		if amount > 1:
-			await ctx.channel.purge(limit=amount)
-			await ctx.send(f":white_check_mark: {amount} messages were deleted successfully!", delete_after = 5)
-			print("Command 'clear' succeed")
-		else:
-			raise discord.ext.commands.errors.BadArgument
-	else:
-		raise discord.ext.commands.errors.BadArgument
-
-@client.command(pass_context = True, aliases=["k"])
-@commands.has_permissions(kick_members=True)
-async def kick(ctx, user: discord.Member):
-	username = user.name
-	await ctx.send(f":white_check_mark: {username} was kicked successfully!")
-	await discord.Member.kick(user)
-	print ("Command 'kick' succeed")
-	print (f"{username} was kicked!")
-
-@client.command(pass_context = True, aliases=["b"])
-@commands.has_permissions(ban_members=True)
-async def ban(ctx, user: discord.Member):
-	username = user.name
-	await ctx.send(f":white_check_mark: {username} was banned successfully!")
-	await discord.Member.ban(user)
-	print ("Command 'ban' succeed")
-	print (f"{username} was banned!")
-
-@client.command(pass_context = True)
-async def avatar(ctx, user: discord.Member=None):
+@client.slash_command(
+    name = "avatar",
+    description = "Responds with your avatar or specified member's avatar",
+    guild_ids = [925794916418859068]
+)
+async def avatar_slash(ctx: ApplicationContext, user: Option(discord.Member, "Enter target user's name (optional)", required = False)):
 	if user is None:
 		value = random.randint(0, 0xffffff)
-		embed = discord.Embed(
-		colour = value
+		avatar_embed = discord.Embed(
+			colour = value,
 		)
-		author = ctx.message.author
-		pfp = author.avatar_url_as(format="png")
 
-		embed.set_author(name="Avatar")
-		embed.set_image(url=pfp)
-		embed.set_footer(text=author.name)
+		# See: https://docs.pycord.dev/en/master/api.html?highlight=interaction#discord.Interaction
+		author = ctx.interaction.user
+		pfp = author.avatar.url
+
+		avatar_embed.set_author(name="Avatar")
+		avatar_embed.set_image(url=pfp)
+		avatar_embed.set_footer(text=author.name)
 		
-		await ctx.send(embed = embed)
-		return
+		await ctx.respond(embed = avatar_embed)
 	else:
 		value = random.randint(0, 0xffffff)
-		embed = discord.Embed(
-		colour = value
+		avatar_embed = discord.Embed(
+			colour = value
 		)
-		pfp = user.avatar_url_as(format="png")
+		pfp = user.avatar.url
 
-		embed.set_author(name="Avatar")
-		embed.set_image(url=pfp)
-		embed.set_footer(text=user.name)
+		avatar_embed.set_author(name="Avatar")
+		avatar_embed.set_image(url=pfp)
+		avatar_embed.set_footer(text=user.name)
+		
+		await ctx.respond(embed = avatar_embed)
 
-		await ctx.send(embed = embed)
-
-@client.command(pass_context = True, aliases=["u", "user"])
-async def user_info(ctx, user: discord.Member=None):
+@client.slash_command(
+	name = "user_info",
+	description = "Displays information about your or other member's account",
+	guild_ids = [925794916418859068]
+)
+async def user_info(ctx: ApplicationContext, user: Option(discord.Member, "Enter target user's name (optional)", required = False)):
 	if user is None:
 		author = ctx.author
-
 		roles = [role for role in author.roles]
 
-		embed = discord.Embed(
-				colour = author.color
+		info_embed = discord.Embed(
+			colour = author.color
 		)
 
-		embed.set_author(name=f'User Info - {author}')
-		embed.set_thumbnail(url=author.avatar_url)
-		embed.set_footer(text=f'Requested by {author}', icon_url=author.avatar_url)
+		info_embed.set_author(name=f'User Info - {author}')
+		info_embed.set_thumbnail(url=author.avatar.url)
+		info_embed.set_footer(text=f'Requested by {author}', icon_url=author.avatar.url)
 
-		embed.add_field(name='ID', value=author.id)
-		embed.add_field(name='Guild Name', value=author.display_name)
-		embed.add_field(name='Status', value=author.status)
-		embed.add_field(name='Activity', value=author.activity)
-		embed.add_field(name='Is on Mobile?', value=author.is_on_mobile())
+		info_embed.add_field(name='ID', value=author.id)
+		info_embed.add_field(name='Guild Name', value=author.display_name)
+		info_embed.add_field(name='Status', value=author.status)
+		info_embed.add_field(name='Custom Status', value=author.activity)
+		info_embed.add_field(name='Is on Mobile?', value=author.is_on_mobile())
 		
-		embed.add_field(name='Created at', value=author.created_at.strftime('%a, %#d %B %Y, %I:%M %p UTC'))
-		embed.add_field(name='Joined at', value=author.joined_at.strftime('%a, %#d %B %Y, %I:%M %p UTC'))
+		info_embed.add_field(name='Created at', value=author.created_at.strftime('%a, %#d %B %Y, %I:%M %p UTC'))
+		info_embed.add_field(name='Joined at', value=author.joined_at.strftime('%a, %#d %B %Y, %I:%M %p UTC'))
 
-		embed.add_field(name=f'Roles ({len(roles)})', value=' '.join([role.mention for role in roles]))
-		embed.add_field(name='Top Role', value=author.top_role.mention)
+		info_embed.add_field(name=f'Roles ({len(roles)})', value=' '.join([role.mention for role in roles]))
+		info_embed.add_field(name='Top Role', value=author.top_role.mention)
 
-		embed.add_field(name='Bot?', value=author.bot)
-
-		await ctx.send(embed=embed)
-		return
+		await ctx.respond(embed=info_embed)
 	else:
-		author = ctx.author
+		author = ctx.interaction.user
 		roles = [role for role in user.roles]
 
-		embed = discord.Embed(
-				colour = user.color
+		info_embed = discord.Embed(
+			colour = user.color
 		)
 
-		embed.set_author(name=f'User Info - {user}')
-		embed.set_thumbnail(url=user.avatar_url)
-		embed.set_footer(text=f'Requested by {author}', icon_url=author.avatar_url)
+		info_embed.set_author(name=f'User Info - {user}')
+		info_embed.set_thumbnail(url=user.avatar.url)
+		info_embed.set_footer(text=f'Requested by {author}', icon_url=author.avatar.url)
 
-		embed.add_field(name='ID', value=user.id)
-		embed.add_field(name='Guild Name', value=user.display_name)
-		embed.add_field(name='Status', value=user.status)
-		embed.add_field(name='Activity', value=user.activity)
-		embed.add_field(name='Is on Mobile?', value=user.is_on_mobile())
+		info_embed.add_field(name='ID', value=user.id)
+		info_embed.add_field(name='Guild Name', value=user.display_name)
+		info_embed.add_field(name='Status', value=user.status)
+		info_embed.add_field(name='Custom Status', value=user.activity)
+		info_embed.add_field(name='Is on Mobile?', value=user.is_on_mobile())
 
-		embed.add_field(name='Created at', value=user.created_at.strftime('%a, %#d %B %Y, %I:%M %p UTC'))
-		embed.add_field(name='Joined at', value=user.joined_at.strftime('%a, %#d %B %Y, %I:%M %p UTC'))
+		info_embed.add_field(name='Created at', value=user.created_at.strftime('%a, %#d %B %Y, %I:%M %p UTC'))
+		info_embed.add_field(name='Joined at', value=user.joined_at.strftime('%a, %#d %B %Y, %I:%M %p UTC'))
 
-		embed.add_field(name=f'Roles ({len(roles)})', value=' '.join([role.mention for role in roles]))
-		embed.add_field(name='Top Role', value=user.top_role.mention)
+		info_embed.add_field(name=f'Roles ({len(roles)})', value=' '.join([role.mention for role in roles]))
+		info_embed.add_field(name='Top Role', value=user.top_role.mention)
 
-		embed.add_field(name='Bot?', value=user.bot)
+		info_embed.add_field(name='Bot?', value=user.bot)
 
-		await ctx.send(embed=embed)
+		await ctx.respond(embed = info_embed)
 
-@client.command(pass_context = True, aliases=["chk_rls", "c_r"])
-async def check_roles(ctx):
+@client.slash_command(
+	name = "check_roles",
+	description = "Checks for missing roles for all the users present in the guild",
+	guild_ids = [925794916418859068]
+)
+async def check_roles_slash(ctx: ApplicationContext):
 	member_count=len([m for m in ctx.guild.members if not m.bot])
 	bot_count=len([m for m in ctx.guild.members if m.bot])
-	await ctx.send("Checking roles for {} members including {} bots...".format(member_count, bot_count))
-	await ctx.send("It may take up to {} minutes.".format(round(((member_count * 2) / 60), 2)))
+	await ctx.respond("Checking roles for {} members including {} bots...".format(member_count, bot_count) + "\n" +
+        ("It may take up to {} minutes.".format(round(((member_count * 2) / 60), 2))))
 	
-	for guild in client.guilds:
-		for member in guild.members:
-			roles = [role.name for role in ctx.guild.roles]
-			role_operating_system = discord.utils.get(ctx.guild.roles, id=role_os_id)
-			role_programming = discord.utils.get(ctx.guild.roles, id=role_programming_id)
-			role_member = discord.utils.get(ctx.guild.roles, id=role_member_id)
-			role_bot = discord.utils.get(ctx.guild.roles, id=role_bot_id)
-			if not member.bot:
-				if role_operating_system not in roles:
-					await member.add_roles(role_operating_system)
-				if role_programming not in roles:
-					await member.add_roles(role_programming)
-				if role_member not in roles:
-					await member.add_roles(role_member)
-			else:
-				if role_bot not in roles:
-					await member.add_roles(role_bot)
+	for member in ctx.guild.members:
+		roles = [role.name for role in ctx.guild.roles]
+		role_operating_system = discord.utils.get(ctx.guild.roles, id=role_os_id)
+		role_programming = discord.utils.get(ctx.guild.roles, id=role_programming_id)
+		role_member = discord.utils.get(ctx.guild.roles, id=role_member_id)
+		role_bot = discord.utils.get(ctx.guild.roles, id=role_bot_id)
+		if not member.bot:
+			if role_operating_system not in roles:
+				await member.add_roles(role_operating_system)
+			if role_programming not in roles:
+				await member.add_roles(role_programming)
+			if role_member not in roles:
+				await member.add_roles(role_member)
+		else:
+			if role_bot not in roles:
+				await member.add_roles(role_bot)
 
-				if role_operating_system in roles:
-					await member.remove_roles(role_operating_system)
-				if role_programming in roles:
-					await member.remove_roles(role_programming)
-				if role_member in roles:
-					await member.remove_roles(role_member)
+			if role_operating_system in roles:
+				await member.remove_roles(role_operating_system)
+			if role_programming in roles:
+				await member.remove_roles(role_programming)
+			if role_member in roles:
+				await member.remove_roles(role_member)
 
 	await ctx.send("Missing roles were added successfully!")
-	print ("Command 'check_roles' succeed!")
 
 with open("token.txt", "r") as file:
 	token=file.readline()
